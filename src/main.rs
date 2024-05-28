@@ -12,7 +12,7 @@ use std::{
     io::{self, stdout},
     time,
 };
-use widgets::StatefulListTraits;
+use widgets::StatefulListItem;
 
 fn main() -> anyhow::Result<()> {
     enable_raw_mode()?;
@@ -34,7 +34,7 @@ fn main() -> anyhow::Result<()> {
 
 fn handle_events<T>(language_list: &mut StatefulList<T>) -> io::Result<bool>
 where
-    for<'a> T: StatefulListTraits<'a>,
+    for<'a> T: StatefulListItem<'a>,
 {
     if event::poll(time::Duration::from_millis(50))? {
         if let Event::Key(key) = event::read()? {
@@ -60,7 +60,7 @@ where
 
 fn ui<T>(frame: &mut Frame, language_list: &mut StatefulList<T>)
 where
-    for<'a> T: StatefulListTraits<'a>,
+    for<'a> T: StatefulListItem<'a>,
 {
     language_list.draw(
         frame,

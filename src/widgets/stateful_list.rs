@@ -2,17 +2,17 @@ use std::collections::BTreeSet;
 
 use ratatui::{prelude::*, text::Text, widgets::*};
 
-pub(crate) trait StatefulListTraits<'a>:
+pub(crate) trait StatefulListItem<'a>:
     Clone + Eq + Ord + Into<ListItem<'a>> + Into<Text<'a>>
 {
 }
 
-impl<'a, T: Clone + Eq + Ord + Into<ListItem<'a>> + Into<Text<'a>>> StatefulListTraits<'a> for T {}
+impl<'a, T: Clone + Eq + Ord + Into<ListItem<'a>> + Into<Text<'a>>> StatefulListItem<'a> for T {}
 
 #[derive(Debug, Clone)]
 pub(crate) struct StatefulList<T>
 where
-    for<'a> T: StatefulListTraits<'a>,
+    for<'a> T: StatefulListItem<'a>,
 {
     items: BTreeSet<T>,
     selected_index: usize,
@@ -21,7 +21,7 @@ where
 
 impl<T> StatefulList<T>
 where
-    for<'a> T: StatefulListTraits<'a>,
+    for<'a> T: StatefulListItem<'a>,
 {
     pub(crate) fn new(items: BTreeSet<T>) -> Self {
         Self {
