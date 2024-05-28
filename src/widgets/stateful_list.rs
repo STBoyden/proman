@@ -48,7 +48,7 @@ where
     }
 
     pub(crate) fn previous_item(&mut self) {
-        if self.selected_index.saturating_sub(1) == 0 {
+        if self.selected_index.wrapping_sub(1) == usize::MAX {
             self.selected_index = self.items.len() - 1;
         } else {
             self.selected_index -= 1;
@@ -59,6 +59,8 @@ where
             .clone()
             .with_selected(Some(self.selected_index));
     }
+
+    pub(crate) fn get_item(&self) -> usize { return self.selected_index }
 
     pub(crate) fn draw<'b, S: 'b>(&mut self, frame: &mut Frame, area: Rect, title: S)
     where
@@ -75,6 +77,6 @@ where
             .highlight_symbol(">>")
             .style(Style::default().fg(Color::White));
 
-        frame.render_stateful_widget(list, area, &mut self.list_state)
+        frame.render_stateful_widget(list, area, &mut self.list_state);
     }
 }

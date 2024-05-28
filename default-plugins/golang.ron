@@ -1,0 +1,20 @@
+(
+    language: "GoLang",
+    requirements: [
+        "go",
+    ],
+    project_types: [
+        Library,
+        Binary,
+    ],
+    command_steps: [
+        Step(
+            name: "Project type",
+            command: PromptProjectType,
+        ),
+        Step(
+            name: "Project name",
+            command: PromptProjectName
+        ),
+    ],
+)
