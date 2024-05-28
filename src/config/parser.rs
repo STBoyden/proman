@@ -1,5 +1,6 @@
 use std::{
     collections::BTreeSet,
+    fmt,
     fs::{self, File},
     io::{BufReader, Read},
 };
@@ -7,27 +8,42 @@ use std::{
 use super::get_language_plugin_dir;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
-pub(crate) struct CommandStepConfig {
-    name: String,
-    command: Vec<String>,
+pub(crate) enum CommandType {
+    PromptProjectType,
+    Command(String),
 }
 
-impl CommandStepConfig {
+impl fmt::Display for CommandType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::PromptProjectType => f.write_str("Prompting project type (binary, library)"),
+            Self::Command(command) => f.write_fmt(format_args!("Running \"{command}\"...")),
+        }
+    }
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
+pub(crate) struct CommandStep {
+    name: String,
+    command: CommandType,
+}
+
+impl CommandStep {
     pub fn name(&self) -> &str { &self.name }
-    pub fn command(&self) -> &[String] { &self.command }
+    pub fn command_string(&self) -> String { self.command.to_string() }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub(crate) struct LanguageConfig {
     language: String,
     requirements: Vec<String>,
-    command_steps: Vec<CommandStepConfig>,
+    command_steps: Vec<CommandStep>,
 }
 
 impl LanguageConfig {
     pub fn language(&self) -> &str { &self.language }
     pub fn requirements(&self) -> &[String] { &self.requirements }
-    pub fn command_steps(&self) -> &[CommandStepConfig] { &self.command_steps }
+    pub fn command_steps(&self) -> &[CommandStep] { &self.command_steps }
 }
 
 impl<'a> From<LanguageConfig> for ratatui::text::Text<'a> {

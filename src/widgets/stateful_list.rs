@@ -24,15 +24,18 @@ where
     for<'a> T: StatefulListItem<'a>,
 {
     pub(crate) fn new(items: BTreeSet<T>) -> Self {
+        let selected_index = 0;
+        let list_state = ListState::default().with_selected(Some(selected_index));
+
         Self {
             items,
-            selected_index: 0,
-            list_state: ListState::default(),
+            selected_index,
+            list_state,
         }
     }
 
     pub(crate) fn next_item(&mut self) {
-        if self.selected_index + 1 > self.items.len() {
+        if self.selected_index.saturating_add(1) >= self.items.len() {
             self.selected_index = 0;
         } else {
             self.selected_index += 1;
@@ -66,10 +69,11 @@ where
 
         let list = List::new(items)
             .block(Block::default().title(title).borders(Borders::ALL))
-            .style(Style::default().fg(Color::White))
+            .direction(ListDirection::TopToBottom)
+            .highlight_spacing(HighlightSpacing::Always)
             .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
             .highlight_symbol(">>")
-            .direction(ListDirection::TopToBottom);
+            .style(Style::default().fg(Color::White));
 
         frame.render_stateful_widget(list, area, &mut self.list_state)
     }
