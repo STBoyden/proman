@@ -73,8 +73,4 @@ where
 
         frame.render_stateful_widget(list, area, &mut self.list_state)
     }
-
-    pub(crate) fn get_state_mut(&mut self) -> &mut ListState {
-        return &mut self.list_state;
-    }
 }

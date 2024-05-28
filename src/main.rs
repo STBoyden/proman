@@ -1,21 +1,17 @@
 mod config;
 mod widgets;
 
-use std::{
-    collections::BTreeSet,
-    io::{self, stdout},
-    time,
-};
-
-use crate::config::{parse_language_configs, LanguageConfig};
-use crate::widgets::StatefulList;
-
+use crate::{config::parse_language_configs, widgets::StatefulList};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
 use ratatui::{backend::CrosstermBackend, prelude::*, Terminal};
+use std::{
+    io::{self, stdout},
+    time,
+};
 use widgets::StatefulListTraits;
 
 fn main() -> anyhow::Result<()> {
@@ -48,11 +44,11 @@ where
                     KeyCode::Char('k') | KeyCode::Up => {
                         language_list.previous_item();
                         return Ok(false);
-                    }
+                    },
                     KeyCode::Char('j') | KeyCode::Down => {
                         language_list.next_item();
                         return Ok(false);
-                    }
+                    },
                     _ => return Ok(false),
                 }
             }

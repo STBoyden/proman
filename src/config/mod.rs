@@ -1,11 +1,9 @@
 mod parser;
 pub(crate) use parser::*;
 
-use std::fs;
-use std::io;
 #[cfg(not(debug_assertions))]
 use std::io::Error;
-use std::path::PathBuf;
+use std::{fs, io, path::PathBuf};
 
 #[cfg(not(debug_assertions))]
 use directories::ProjectDirs;

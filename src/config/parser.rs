@@ -13,13 +13,8 @@ pub(crate) struct CommandStepConfig {
 }
 
 impl CommandStepConfig {
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn command(&self) -> &[String] {
-        &self.command
-    }
+    pub fn name(&self) -> &str { &self.name }
+    pub fn command(&self) -> &[String] { &self.command }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
@@ -30,23 +25,13 @@ pub(crate) struct LanguageConfig {
 }
 
 impl LanguageConfig {
-    pub fn language(&self) -> &str {
-        &self.language
-    }
-
-    pub fn requirements(&self) -> &[String] {
-        &self.requirements
-    }
-
-    pub fn command_steps(&self) -> &[CommandStepConfig] {
-        &self.command_steps
-    }
+    pub fn language(&self) -> &str { &self.language }
+    pub fn requirements(&self) -> &[String] { &self.requirements }
+    pub fn command_steps(&self) -> &[CommandStepConfig] { &self.command_steps }
 }
 
 impl<'a> From<LanguageConfig> for ratatui::text::Text<'a> {
-    fn from(value: LanguageConfig) -> Self {
-        ratatui::text::Text::raw(value.language.clone())
-    }
+    fn from(value: LanguageConfig) -> Self { ratatui::text::Text::raw(value.language.clone()) }
 }
 
 pub(crate) fn parse_language_configs() -> anyhow::Result<BTreeSet<LanguageConfig>> {
