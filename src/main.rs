@@ -39,11 +39,11 @@ struct RunningState {
     input: String,
 }
 
-enum AppState<T>
+enum AppState<ListItem>
 where
-    for<'a> T: StatefulListItem<'a>,
+    for<'a> ListItem: StatefulListItem<'a>,
 {
-    Main(StatefulList<T>),
+    Main(StatefulList<ListItem>),
     Starting(LanguageConfig),
     Running(LanguageConfigRunner, Option<RunningState>),
     Stopping,
@@ -101,26 +101,28 @@ where
 
 /// Handle events that happen during the runtime of the application, can include key
 /// events, or other custom-made events that the application should be able to respond to.
-fn handle_events<T>(app_state: &mut AppState<T>) -> config::Result<Message>
+fn handle_events<ListItem>(app_state: &mut AppState<ListItem>) -> config::Result<Message>
 where
-    for<'a> T: StatefulListItem<'a>,
+    for<'a> ListItem: StatefulListItem<'a>,
 {
     let message = match app_state {
         AppState::Main(ref mut language_list) => key_handler(
             language_list,
-            Box::new(|list: &mut StatefulList<T>, key_code| match key_code {
-                KeyCode::Char('q') => Ok(Message::ShouldQuit),
-                KeyCode::Char('k') | KeyCode::Up => {
-                    list.previous_item();
-                    Ok(Message::NoOp)
+            Box::new(
+                |list: &mut StatefulList<ListItem>, key_code| match key_code {
+                    KeyCode::Char('q') => Ok(Message::ShouldQuit),
+                    KeyCode::Char('k') | KeyCode::Up => {
+                        list.previous_item();
+                        Ok(Message::NoOp)
+                    },
+                    KeyCode::Char('j') | KeyCode::Down => {
+                        list.next_item();
+                        Ok(Message::NoOp)
+                    },
+                    KeyCode::Enter => Ok(Message::RunConfiguration(list.get_item())),
+                    _ => Ok(Message::NoOp),
                 },
-                KeyCode::Char('j') | KeyCode::Down => {
-                    list.next_item();
-                    Ok(Message::NoOp)
-                },
-                KeyCode::Enter => Ok(Message::RunConfiguration(list.get_item())),
-                _ => Ok(Message::NoOp),
-            }),
+            ),
         ),
         AppState::Running(_, running_state) => key_handler(
             running_state,
@@ -154,9 +156,9 @@ where
 }
 
 /// Draw the ui of the application.
-fn ui<T>(frame: &mut Frame, app_state: &mut AppState<T>)
+fn ui<ListItem>(frame: &mut Frame, app_state: &mut AppState<ListItem>)
 where
-    for<'a> T: StatefulListItem<'a>,
+    for<'a> ListItem: StatefulListItem<'a>,
 {
     match app_state {
         AppState::Main(ref mut list) => list.draw(
