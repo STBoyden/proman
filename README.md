@@ -8,6 +8,8 @@
 This is a simple and configurable, terminal-based application to create new programming
 projects for a multitude of languages.
 
+## Plugins
+
 The application utilises the RON file format to
 specify and create plugins. Default plugins are available in the `default-plugins`
 directory and are built into the application during compile-time, so the files do not
@@ -22,5 +24,3 @@ directory on the filesystem, to enable them to be used by `proman`.
 
 If you're running the application from source, and in debug mode, then the directory for
 plugins will be `plugins/` relative to the root of the project.
-
-## Plugins
