@@ -69,9 +69,10 @@ impl<'a> From<LanguageConfig> for ratatui::text::Text<'a> {
     fn from(value: LanguageConfig) -> Self { ratatui::text::Text::raw(value.language.clone()) }
 }
 
-/// Parses the default language configurations from [`const::DEFAULT_PLUGINS_BYTES`] which
-/// is configured and set at compile-time in the build script. Returns a
-/// [`Result<BTreeSet<LanguageConfig>>`] but should not error.
+/// Parses the default language configurations from
+/// [`crate::consts::DEFAULT_PLUGINS_BYTES`] which is configured and set at compile-time
+/// in the build script. Returns a [`Result<BTreeSet<LanguageConfig>>`] but should not
+/// error.
 fn parse_default_language_configs() -> Result<BTreeSet<LanguageConfig>> {
     let mut language_configurations = BTreeSet::new();
 
@@ -154,8 +155,8 @@ impl LanguageConfigRunner {
     }
 
     /// Start or continue the current runner. If the current runner is already running and
-    /// has a set [`command_receiver`] for the recipient, then the function returns early,
-    /// a cloned version of the reference-counted [`command_receiver`].
+    /// has a set [`Self::command_receiver`] for the recipient, then the function returns
+    /// early, a cloned version of the reference-counted [`Self::command_receiver`].
     pub fn start_or_continue(
         &mut self,
     ) -> Option<Rc<mpsc::Receiver<(RunningConfigMessage, bool)>>> {

@@ -9,8 +9,8 @@ fn main() {
     let mut plugins_file = File::create(Path::new(&out_dir).join("plugins.include")).unwrap();
 
     _ = plugins_file.write_fmt(format_args!(
-        r#"// This file has been generated, please do not edit.
-            
+        r#"/// Generated at compile time, contains the raw bytes of the files in the repository in
+/// `default-plugins/`.
 pub const DEFAULT_PLUGINS_BYTES: [&[u8]; {}] = [
 "#,
         file_paths.len()
