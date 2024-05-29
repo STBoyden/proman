@@ -174,10 +174,12 @@ impl LanguageConfigRunner {
         let name_lock = self.project_name.clone();
         _ = std::thread::spawn(move || {
             commands.iter().for_each(|step| {
-                _ = command_tx.send((
-                    RunningConfigMessage::SetCommandStepText(step.name.clone()),
-                    false,
-                ));
+                command_tx
+                    .send((
+                        RunningConfigMessage::SetCommandStepText(step.name.clone()),
+                        false,
+                    ))
+                    .unwrap();
 
                 match &step.command {
                     CommandType::PromptProjectName => {
@@ -199,7 +201,7 @@ impl LanguageConfigRunner {
                 }
             });
 
-            _ = command_tx.send((RunningConfigMessage::NoOp, true));
+            command_tx.send((RunningConfigMessage::NoOp, true)).unwrap();
         });
 
         Some(Rc::new(command_rx))
