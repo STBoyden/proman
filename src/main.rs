@@ -2,13 +2,13 @@ use std::{io::stdout, time::Duration};
 
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{backend::CrosstermBackend, prelude::*, Terminal};
 
 use crate::{
-    config::{parse_language_configs, LanguageConfig, LanguageConfigRunner, RunningConfigMessage},
+    config::{LanguageConfig, LanguageConfigRunner, parse_language_configs, RunningConfigMessage},
     widgets::{StatefulList, StatefulListItem},
 };
 
@@ -17,6 +17,7 @@ mod config;
 mod consts;
 mod widgets;
 
+// The cleanup process for exiting the application.
 fn cleanup() -> config::Result<()> {
     disable_raw_mode()?;
     stdout().execute(LeaveAlternateScreen)?;
@@ -82,6 +83,7 @@ fn main() -> config::Result<()> {
     cleanup()
 }
 
+/// Higher-order scaffolding function for handling key events in [`handle_events`].
 fn key_handler<T, F>(param: T, f: Box<F>) -> config::Result<Message>
 where
     F: FnOnce(T, KeyCode) -> config::Result<Message>,
@@ -97,6 +99,8 @@ where
     Ok(Message::NoOp)
 }
 
+/// Handle events that happen during the runtime of the application, can include key
+/// events, or other custom-made events that the application should be able to respond to.
 fn handle_events<T>(app_state: &mut AppState<T>) -> config::Result<Message>
 where
     for<'a> T: StatefulListItem<'a>,
@@ -149,6 +153,7 @@ where
     message
 }
 
+/// Draw the ui of the application.
 fn ui<T>(frame: &mut Frame, app_state: &mut AppState<T>)
 where
     for<'a> T: StatefulListItem<'a>,
