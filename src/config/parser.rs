@@ -134,7 +134,7 @@ pub(crate) struct LanguageConfigRunner {
     project_name: Arc<RwLock<String>>,
     project_type: Arc<RwLock<ProjectType>>,
     has_started: bool,
-    command_reciever: Option<Rc<mpsc::Receiver<(RunningConfigMessage, bool)>>>,
+    command_receiver: Option<Rc<mpsc::Receiver<(RunningConfigMessage, bool)>>>,
 }
 
 impl LanguageConfigRunner {
@@ -144,15 +144,15 @@ impl LanguageConfigRunner {
             project_name: Arc::new(RwLock::new(String::new())),
             project_type: Arc::new(RwLock::new(ProjectType::Binary)),
             has_started: false,
-            command_reciever: None,
+            command_receiver: None,
         }
     }
 
     pub fn start_or_continue(
         &mut self,
     ) -> Option<Rc<mpsc::Receiver<(RunningConfigMessage, bool)>>> {
-        if self.has_started && self.command_reciever.is_some() {
-            return self.command_reciever.clone();
+        if self.has_started && self.command_receiver.is_some() {
+            return self.command_receiver.clone();
         } else if self.has_started {
             return None;
         }
