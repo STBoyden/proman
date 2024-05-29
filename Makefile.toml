@@ -1,0 +1,12 @@
+[tasks.format]
+command = "cargo"
+toolchain = "nightly"
+args = ["fmt"]
+
+[tasks.run]
+command = "cargo"
+args = ["run"]
+
+[tasks.default]
+clear = true
+dependencies = ["format", "build", "run"]
