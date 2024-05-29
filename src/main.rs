@@ -1,3 +1,6 @@
+#![allow(clippy::pedantic, clippy::nursery)]
+#![feature(let_chains)]
+
 use std::{io::stdout, time::Duration};
 
 use crossterm::{
@@ -12,7 +15,6 @@ use crate::{
     widgets::{StatefulList, StatefulListItem},
 };
 
-#[allow(clippy::pedantic, clippy::nursery)]
 mod config;
 mod consts;
 mod widgets;
@@ -139,6 +141,7 @@ where
                             state.input.push(character);
                             Ok(Message::NoOp)
                         },
+                        KeyCode::Esc => Ok(Message::ShouldQuit),
                         _ => Ok(Message::NoOp),
                     }
                 } else {
@@ -179,7 +182,8 @@ where
             };
             let mut stop = false;
 
-            if let Some(ref rx) = runner.start_or_continue() {
+            let mut res = runner.start_or_continue();
+            if let Ok(ref mut rx) = res {
                 if let Ok((message, should_stop)) = rx.recv() {
                     if should_stop {
                         stop = should_stop;
@@ -203,9 +207,9 @@ where
                         *app_state = AppState::Stopping;
                     }
                 }
-            } else {
+            } else if let Err(_error) = res {
                 cleanup().unwrap();
-                panic!("could not receive from command")
+                panic!("could not receive from command: {_error}")
             };
         },
         AppState::Stopping => (),

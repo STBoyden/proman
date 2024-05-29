@@ -3,9 +3,10 @@ use std::{
     fmt,
     fs::{self, File},
     io::{BufReader, Read},
-    rc::Rc,
-    sync::{Arc, mpsc, RwLock},
+    sync::{Arc, mpsc, Mutex, RwLock},
 };
+
+use bus::{Bus, BusReader};
 
 use super::{Error, get_language_plugin_dir, Result};
 
@@ -127,6 +128,7 @@ pub(crate) fn parse_language_configs() -> Result<BTreeSet<LanguageConfig>> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub(crate) enum RunningConfigMessage {
     SetCommandStepText(String),
     StartInputPrompt,
@@ -135,12 +137,20 @@ pub(crate) enum RunningConfigMessage {
     NoOp,
 }
 
+#[derive(Copy, Clone, Debug, thiserror::Error)]
+pub enum RunnerError {
+    #[error("the runner has already been started, but there seems to be no bus to send from?")]
+    AlreadyStartedButNoBus,
+}
+
+type CommandBusType = Option<Arc<Mutex<Bus<(RunningConfigMessage, bool)>>>>;
+
 pub(crate) struct LanguageConfigRunner {
     commands: Vec<CommandStep>,
     project_name: Arc<RwLock<String>>,
     project_type: Arc<RwLock<ProjectType>>,
     has_started: bool,
-    command_receiver: Option<Rc<mpsc::Receiver<(RunningConfigMessage, bool)>>>,
+    command_bus: CommandBusType,
 }
 
 impl LanguageConfigRunner {
@@ -150,7 +160,7 @@ impl LanguageConfigRunner {
             project_name: Arc::new(RwLock::new(String::new())),
             project_type: Arc::new(RwLock::new(ProjectType::Binary)),
             has_started: false,
-            command_receiver: None,
+            command_bus: None,
         }
     }
 
@@ -159,38 +169,42 @@ impl LanguageConfigRunner {
     /// early, a cloned version of the reference-counted [`Self::command_receiver`].
     pub fn start_or_continue(
         &mut self,
-    ) -> Option<Rc<mpsc::Receiver<(RunningConfigMessage, bool)>>> {
-        if self.has_started && self.command_receiver.is_some() {
-            return self.command_receiver.clone();
+    ) -> std::result::Result<BusReader<(RunningConfigMessage, bool)>, RunnerError> {
+        if let Some(ref mut bus) = self.command_bus
+            && self.has_started
+        {
+            return Ok(bus.lock().unwrap().add_rx());
         } else if self.has_started {
-            return None;
+            return Err(RunnerError::AlreadyStartedButNoBus);
         }
 
         self.has_started = true;
 
-        let (command_tx, command_rx) = mpsc::channel();
+        let command_tx = Arc::new(Mutex::new(Bus::new(4096)));
+        let command_rx = command_tx.lock().unwrap().add_rx();
+        self.command_bus = Some(command_tx.clone());
 
         let commands = self.commands.clone();
         let name_lock = self.project_name.clone();
-        _ = std::thread::spawn(move || {
+        std::thread::spawn(move || {
             commands.iter().for_each(|step| {
-                command_tx
-                    .send((
-                        RunningConfigMessage::SetCommandStepText(step.name.clone()),
-                        false,
-                    ))
-                    .unwrap();
+                command_tx.lock().unwrap().broadcast((
+                    RunningConfigMessage::SetCommandStepText(step.name.clone()),
+                    false,
+                ));
 
                 match &step.command {
                     CommandType::PromptProjectName => {
                         command_tx
-                            .send((RunningConfigMessage::StartInputPrompt, false))
-                            .unwrap();
+                            .lock()
+                            .unwrap()
+                            .broadcast((RunningConfigMessage::StartInputPrompt, false));
 
                         let (name_tx, name_rx) = mpsc::channel();
-                        command_tx
-                            .send((RunningConfigMessage::PromptForProjectName(name_tx), false))
-                            .unwrap();
+                        command_tx.lock().unwrap().broadcast((
+                            RunningConfigMessage::PromptForProjectName(name_tx),
+                            false,
+                        ));
 
                         if let Ok(name) = name_rx.recv() {
                             *name_lock.write().unwrap() = name;
@@ -201,9 +215,12 @@ impl LanguageConfigRunner {
                 }
             });
 
-            command_tx.send((RunningConfigMessage::NoOp, true)).unwrap();
+            command_tx
+                .lock()
+                .unwrap()
+                .broadcast((RunningConfigMessage::NoOp, true));
         });
 
-        Some(Rc::new(command_rx))
+        Ok(command_rx)
     }
 }

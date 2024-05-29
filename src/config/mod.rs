@@ -1,6 +1,6 @@
+use std::{fs, io, path::PathBuf};
 #[cfg(not(debug_assertions))]
 use std::io::Error;
-use std::{fs, io, path::PathBuf};
 
 #[cfg(not(debug_assertions))]
 use directories::ProjectDirs;
@@ -29,6 +29,10 @@ pub(crate) enum Error {
     CouldNotReadDefaultPlugins(String),
     #[error("no configurations found on the filesystem")]
     NoConfigurations,
+
+    // runner errors
+    #[error("an occurred in the language configuration runner: {0}")]
+    Runner(#[from] RunnerError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
