@@ -5,13 +5,13 @@ use std::{io::stdout, time::Duration};
 
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
-    ExecutableCommand,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
 use ratatui::{backend::CrosstermBackend, prelude::*, Terminal};
 
 use crate::{
-    config::{LanguageConfig, LanguageConfigRunner, parse_language_configs, RunningConfigMessage},
+    config::{parse_language_configs, LanguageConfig, LanguageConfigRunner, RunningConfigMessage},
     widgets::{StatefulList, StatefulListItem},
 };
 
@@ -107,7 +107,7 @@ fn handle_events<ListItem>(app_state: &mut AppState<ListItem>) -> config::Result
 where
     for<'a> ListItem: StatefulListItem<'a>,
 {
-    let message = match app_state {
+    match app_state {
         AppState::Main(ref mut language_list) => key_handler(
             language_list,
             Box::new(
@@ -153,9 +153,7 @@ where
             }),
         ),
         _ => Ok(Message::NoOp),
-    };
-
-    message
+    }
 }
 
 /// Draw the ui of the application.

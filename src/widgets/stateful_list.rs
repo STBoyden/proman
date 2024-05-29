@@ -60,7 +60,7 @@ where
             .with_selected(Some(self.selected_index));
     }
 
-    pub(crate) fn get_item(&self) -> usize { return self.selected_index; }
+    pub(crate) fn get_item(&self) -> usize { self.selected_index }
 
     pub(crate) fn draw<'b, S: 'b>(&mut self, frame: &mut Frame, area: Rect, title: S)
     where

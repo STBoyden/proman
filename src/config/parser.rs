@@ -3,12 +3,12 @@ use std::{
     fmt,
     fs::{self, File},
     io::{BufReader, Read},
-    sync::{Arc, mpsc, Mutex, RwLock},
+    sync::{mpsc, Arc, Mutex, RwLock},
 };
 
 use bus::{Bus, BusReader};
 
-use super::{Error, get_language_plugin_dir, Result};
+use super::{get_language_plugin_dir, Error, Result};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub(crate) enum CommandType {

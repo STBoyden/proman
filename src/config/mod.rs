@@ -1,6 +1,6 @@
-use std::{fs, io, path::PathBuf};
 #[cfg(not(debug_assertions))]
 use std::io::Error;
+use std::{fs, io, path::PathBuf};
 
 #[cfg(not(debug_assertions))]
 use directories::ProjectDirs;
