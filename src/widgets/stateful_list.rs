@@ -10,20 +10,20 @@ pub(crate) trait StatefulListItem<'a>:
 impl<'a, T: Clone + Eq + Ord + Into<ListItem<'a>> + Into<Text<'a>>> StatefulListItem<'a> for T {}
 
 #[derive(Debug, Clone)]
-pub(crate) struct StatefulList<T>
+pub(crate) struct StatefulList<ListItem>
 where
-    for<'a> T: StatefulListItem<'a>,
+    for<'a> ListItem: StatefulListItem<'a>,
 {
-    items:          BTreeSet<T>,
+    items:          BTreeSet<ListItem>,
     selected_index: usize,
     list_state:     ListState,
 }
 
-impl<T> StatefulList<T>
+impl<ListItem> StatefulList<ListItem>
 where
-    for<'a> T: StatefulListItem<'a>,
+    for<'a> ListItem: StatefulListItem<'a>,
 {
-    pub(crate) fn new(items: BTreeSet<T>) -> Self {
+    pub(crate) fn new(items: BTreeSet<ListItem>) -> Self {
         let selected_index = 0;
         let list_state = ListState::default().with_selected(Some(selected_index));
 
@@ -34,7 +34,7 @@ where
         }
     }
 
-    pub(crate) fn set_items(&mut self, items: BTreeSet<T>) {
+    pub(crate) fn set_items(&mut self, items: BTreeSet<ListItem>) {
         if items.len() < self.items.len() {
             self.selected_index = items.len() - 1;
         }
@@ -42,7 +42,9 @@ where
         self.items = items;
     }
 
-    pub(crate) fn get_items(&self) -> Vec<T> { self.items.iter().cloned().collect::<Vec<_>>() }
+    pub(crate) fn get_items(&self) -> Vec<ListItem> {
+        self.items.iter().cloned().collect::<Vec<ListItem>>()
+    }
 
     pub(crate) fn next_item(&mut self) {
         if self.selected_index.saturating_add(1) >= self.items.len() {
