@@ -16,11 +16,11 @@ directory and are built into the application during compile-time, so the files d
 need to be present on the user's file system. Plugins can be placed in the user's plugin
 directory on the filesystem, to enable them to be used by `proman`.
 
-| Operating System | Directory                                                                                      |
-|:----------------:|:-----------------------------------------------------------------------------------------------|
-|      Linux       | `$HOME/.config/proman/plugins`                                                                 |
-|     Windows      | `$APPDATA\stboyden\proman\plugins\` (PowerShell)<br/>`%APPDATA%\stboyden\proman\plugins` (CMD) |
-|      MacOS       | `$HOME/Library/Application Support/com.stboyden.proman/`                                       |
+| Operating System | Directory                                                                                                       |
+|:----------------:|:----------------------------------------------------------------------------------------------------------------|
+|      Linux       | `$HOME/.config/proman/plugins`                                                                                  |
+|     Windows      | `$env:APPDATA\stboyden\proman\config\plugins` (PowerShell)<br/>`%APPDATA%\stboyden\proman\config\plugins` (CMD) |
+|      MacOS       | `$HOME/Library/Application Support/com.stboyden.proman/`                                                        |
 
 If you're running the application from source, and in debug mode, then the directory for
 plugins will be `plugins/` relative to the root of the project.
