@@ -24,3 +24,12 @@ directory on the filesystem, to enable them to be used by `proman`.
 
 If you're running the application from source, and in debug mode, then the directory for
 plugins will be `plugins/` relative to the root of the project.
+
+## Licensing
+
+This project can be licensed in either:
+
+- MIT License
+- Apache 2.0 License
+
+At your discretion.
