@@ -7,6 +7,7 @@ use std::{
 };
 
 use bus::{Bus, BusReader};
+use ratatui::prelude::Text;
 
 use super::{get_language_plugin_dir, Error, Result};
 
@@ -41,18 +42,33 @@ impl CommandStep {
     pub fn command_string(&self) -> String { self.command.to_string() }
 }
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(
+    Clone, Debug, serde::Serialize, serde::Deserialize, Ord, PartialOrd, Eq, PartialEq, Default,
+)]
 pub enum ProjectType {
+    #[default]
     Binary,
     Library,
     Workspace,
+}
+
+impl<'a> From<ProjectType> for Text<'a> {
+    fn from(project_type: ProjectType) -> Text<'a> {
+        let s = match project_type {
+            ProjectType::Binary => "Binary",
+            ProjectType::Library => "Library",
+            ProjectType::Workspace => "Workspace",
+        };
+
+        Text::from(s)
+    }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub(crate) struct LanguageConfig {
     language: String,
     requirements: Vec<String>,
-    project_types: Vec<ProjectType>,
+    project_types: BTreeSet<ProjectType>,
     command_steps: Vec<CommandStep>,
 }
 
@@ -62,12 +78,12 @@ impl LanguageConfig {
     pub fn command_steps(&self) -> &[CommandStep] { &self.command_steps }
 
     pub fn create_runner(&self) -> LanguageConfigRunner {
-        LanguageConfigRunner::new(self.command_steps.clone())
+        LanguageConfigRunner::new(self.command_steps.clone(), self.project_types.clone())
     }
 }
 
-impl<'a> From<LanguageConfig> for ratatui::text::Text<'a> {
-    fn from(value: LanguageConfig) -> Self { ratatui::text::Text::raw(value.language.clone()) }
+impl<'a> From<LanguageConfig> for Text<'a> {
+    fn from(value: LanguageConfig) -> Self { Text::raw(value.language.clone()) }
 }
 
 /// Parses the default language configurations from
@@ -128,12 +144,18 @@ pub(crate) fn parse_language_configs() -> Result<BTreeSet<LanguageConfig>> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub(crate) enum RunningConfigMessage {
     SetCommandStepText(String),
     StartInputPrompt,
+    StartChoicePrompt,
     PromptForProjectName(mpsc::Sender<String>),
+    PromptForProjectType {
+        available_types: BTreeSet<ProjectType>,
+        channel: mpsc::Sender<ProjectType>,
+    },
     CommandOutput(String),
+    #[default]
     NoOp,
 }
 
@@ -145,8 +167,10 @@ pub enum RunnerError {
 
 type CommandBusType = Option<Arc<Mutex<Bus<(RunningConfigMessage, bool)>>>>;
 
+#[derive(Clone, Debug)]
 pub(crate) struct LanguageConfigRunner {
     commands: Vec<CommandStep>,
+    project_types: BTreeSet<ProjectType>,
     project_name: Arc<RwLock<String>>,
     project_type: Arc<RwLock<ProjectType>>,
     has_started: bool,
@@ -154,9 +178,13 @@ pub(crate) struct LanguageConfigRunner {
 }
 
 impl LanguageConfigRunner {
-    fn new(commands: Vec<CommandStep>) -> LanguageConfigRunner {
+    fn new(
+        commands: Vec<CommandStep>,
+        project_types: BTreeSet<ProjectType>,
+    ) -> LanguageConfigRunner {
         LanguageConfigRunner {
             commands,
+            project_types,
             project_name: Arc::new(RwLock::new(String::new())),
             project_type: Arc::new(RwLock::new(ProjectType::Binary)),
             has_started: false,
@@ -184,8 +212,14 @@ impl LanguageConfigRunner {
         let command_rx = command_tx.lock().unwrap().add_rx();
         self.command_bus = Some(command_tx.clone());
 
-        let commands = self.commands.clone();
-        let name_lock = self.project_name.clone();
+        let Self {
+            commands,
+            project_types: available_types,
+            project_name: name_lock,
+            project_type: type_lock,
+            ..
+        } = self.clone();
+
         std::thread::spawn(move || {
             commands.iter().for_each(|step| {
                 command_tx.lock().unwrap().broadcast((
@@ -208,6 +242,25 @@ impl LanguageConfigRunner {
 
                         if let Ok(name) = name_rx.recv() {
                             *name_lock.write().unwrap() = name;
+                        }
+                    },
+                    CommandType::PromptProjectType => {
+                        command_tx
+                            .lock()
+                            .unwrap()
+                            .broadcast((RunningConfigMessage::StartChoicePrompt, false));
+
+                        let (type_tx, type_rx) = mpsc::channel();
+                        command_tx.lock().unwrap().broadcast((
+                            RunningConfigMessage::PromptForProjectType {
+                                available_types: available_types.clone(),
+                                channel: type_tx,
+                            },
+                            false,
+                        ));
+
+                        if let Ok(project_type) = type_rx.recv() {
+                            *type_lock.write().unwrap() = project_type;
                         }
                     },
                     CommandType::Command(command, arguments) => (),

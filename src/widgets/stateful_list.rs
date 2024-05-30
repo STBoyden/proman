@@ -34,6 +34,16 @@ where
         }
     }
 
+    pub(crate) fn set_items(&mut self, items: BTreeSet<T>) {
+        if items.len() < self.items.len() {
+            self.selected_index = items.len() - 1;
+        }
+
+        self.items = items;
+    }
+
+    pub(crate) fn get_items(&self) -> Vec<T> { self.items.iter().cloned().collect::<Vec<_>>() }
+
     pub(crate) fn next_item(&mut self) {
         if self.selected_index.saturating_add(1) >= self.items.len() {
             self.selected_index = 0;
@@ -60,7 +70,7 @@ where
             .with_selected(Some(self.selected_index));
     }
 
-    pub(crate) fn get_item(&self) -> usize { self.selected_index }
+    pub(crate) fn get_selected_index(&self) -> usize { self.selected_index }
 
     pub(crate) fn draw<'b, S: 'b>(&mut self, frame: &mut Frame, area: Rect, title: S)
     where

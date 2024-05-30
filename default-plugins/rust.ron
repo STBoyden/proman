@@ -9,12 +9,12 @@
     ],
     command_steps: [
         Step(
-            name: "Project type",
-            command: PromptProjectType,
+            name: "What's the project name?",
+            command: PromptProjectName
         ),
         Step(
-            name: "Project name",
-            command: PromptProjectName
+            name: "What's the project type?",
+            command: PromptProjectType,
         ),
     ],
 )
