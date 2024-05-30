@@ -5,19 +5,19 @@ use std::{collections::BTreeSet, io::stdout, time::Duration};
 
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
-    ExecutableCommand,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
 use ratatui::{
     backend::CrosstermBackend,
     prelude::*,
-    Terminal,
     widgets::{Block, Borders, Paragraph},
+    Terminal,
 };
 
 use crate::{
     config::{
-        LanguageConfig, LanguageConfigRunner, parse_language_configs, ProjectType,
+        parse_language_configs, LanguageConfig, LanguageConfigRunner, ProjectType,
         RunningConfigMessage,
     },
     widgets::{StatefulList, StatefulListItem},
@@ -51,12 +51,12 @@ enum InputMode {
 
 #[derive(Clone, Debug, Default)]
 struct RunningState {
-    step_name: String,
-    scroll_back: Vec<String>,
-    input_mode: InputMode,
-    input: String,
-    project_type_list: Option<StatefulList<ProjectType>>,
-    selected_project_type: Option<ProjectType>,
+    step_name:              String,
+    scroll_back:            Vec<String>,
+    input_mode:             InputMode,
+    input:                  String,
+    project_type_list:      Option<StatefulList<ProjectType>>,
+    selected_project_type:  Option<ProjectType>,
     running_config_message: RunningConfigMessage,
 }
 

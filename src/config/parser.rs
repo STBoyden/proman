@@ -3,13 +3,13 @@ use std::{
     fmt,
     fs::{self, File},
     io::{BufReader, Read},
-    sync::{mpsc, Arc, Mutex, RwLock},
+    sync::{Arc, mpsc, Mutex, RwLock},
 };
 
 use bus::{Bus, BusReader};
 use ratatui::prelude::Text;
 
-use super::{get_language_plugin_dir, Error, Result};
+use super::{Error, get_language_plugin_dir, Result};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub(crate) enum CommandType {
@@ -33,7 +33,7 @@ impl fmt::Display for CommandType {
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 #[serde(rename = "Step")]
 pub(crate) struct CommandStep {
-    name: String,
+    name:    String,
     command: CommandType,
 }
 
@@ -66,8 +66,8 @@ impl<'a> From<ProjectType> for Text<'a> {
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub(crate) struct LanguageConfig {
-    language: String,
-    requirements: Vec<String>,
+    language:      String,
+    requirements:  Vec<String>,
     project_types: BTreeSet<ProjectType>,
     command_steps: Vec<CommandStep>,
 }
@@ -152,7 +152,7 @@ pub(crate) enum RunningConfigMessage {
     PromptForProjectName(mpsc::Sender<String>),
     PromptForProjectType {
         available_types: BTreeSet<ProjectType>,
-        channel: mpsc::Sender<ProjectType>,
+        channel:         mpsc::Sender<ProjectType>,
     },
     CommandOutput(String),
     #[default]
@@ -169,12 +169,12 @@ type CommandBusType = Option<Arc<Mutex<Bus<(RunningConfigMessage, bool)>>>>;
 
 #[derive(Clone, Debug)]
 pub(crate) struct LanguageConfigRunner {
-    commands: Vec<CommandStep>,
+    commands:      Vec<CommandStep>,
     project_types: BTreeSet<ProjectType>,
-    project_name: Arc<RwLock<String>>,
-    project_type: Arc<RwLock<ProjectType>>,
-    has_started: bool,
-    command_bus: CommandBusType,
+    project_name:  Arc<RwLock<String>>,
+    project_type:  Arc<RwLock<ProjectType>>,
+    has_started:   bool,
+    command_bus:   CommandBusType,
 }
 
 impl LanguageConfigRunner {
@@ -254,7 +254,7 @@ impl LanguageConfigRunner {
                         command_tx.lock().unwrap().broadcast((
                             RunningConfigMessage::PromptForProjectType {
                                 available_types: available_types.clone(),
-                                channel: type_tx,
+                                channel:         type_tx,
                             },
                             false,
                         ));

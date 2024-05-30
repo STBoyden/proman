@@ -14,9 +14,9 @@ pub(crate) struct StatefulList<T>
 where
     for<'a> T: StatefulListItem<'a>,
 {
-    items: BTreeSet<T>,
+    items:          BTreeSet<T>,
     selected_index: usize,
-    list_state: ListState,
+    list_state:     ListState,
 }
 
 impl<T> StatefulList<T>
