@@ -3,13 +3,13 @@ use std::{
     fmt,
     fs::{self, File},
     io::{BufReader, Read},
-    sync::{Arc, mpsc, Mutex, RwLock},
+    sync::{mpsc, Arc, Mutex, RwLock},
 };
 
 use bus::{Bus, BusReader};
 use ratatui::prelude::Text;
 
-use super::{Error, get_language_plugin_dir, Result};
+use super::{get_language_plugin_dir, Error, Result};
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd, Eq, Ord)]
 pub(crate) enum CommandType {
@@ -193,8 +193,8 @@ impl LanguageConfigRunner {
     }
 
     /// Start or continue the current runner. If the current runner is already running and
-    /// has a set [`Self::command_receiver`] for the recipient, then the function returns
-    /// early, a cloned version of the reference-counted [`Self::command_receiver`].
+    /// has a set [`Self::command_bus`] for the recipient, then the function returns
+    /// early, a cloned version of the reference-counted [`Self::command_bus`].
     pub fn start_or_continue(
         &mut self,
     ) -> std::result::Result<BusReader<(RunningConfigMessage, bool)>, RunnerError> {
