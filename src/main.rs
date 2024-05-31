@@ -104,6 +104,19 @@ fn main() -> config::Result<()> {
     cleanup()
 }
 
+// Extracts a [`RunningState`] from a given reference to [`Option<RunningState>`]. This
+// isn't technically needed, but Clippy complains about duplicated code.
+fn extract_state(state: &Option<RunningState>) -> RunningState {
+    if let Some(state) = state {
+        state.clone()
+    } else {
+        RunningState {
+            project_type_list: Some(StatefulList::new(BTreeSet::<ProjectType>::new())),
+            ..Default::default()
+        }
+    }
+}
+
 /// Higher-order scaffolding function for handling key events in [`handle_events`].
 fn key_handler<T, F>(param: T, f: Box<F>) -> config::Result<Message>
 where
@@ -203,14 +216,7 @@ where
             ),
         ),
         AppState::Running(_, running_state) => {
-            let mut state = if let Some(state) = running_state {
-                state.clone()
-            } else {
-                RunningState {
-                    project_type_list: Some(StatefulList::new(BTreeSet::<ProjectType>::new())),
-                    ..Default::default()
-                }
-            };
+            let mut state = extract_state(running_state);
 
             key_handler(
                 running_state,
@@ -252,14 +258,7 @@ fn ui_running<ListItem>(
 where
     for<'a> ListItem: StatefulListItem<'a>,
 {
-    let mut state = if let Some(state) = running_state {
-        state.clone()
-    } else {
-        RunningState {
-            project_type_list: Some(StatefulList::new(BTreeSet::<ProjectType>::new())),
-            ..Default::default()
-        }
-    };
+    let mut state = extract_state(running_state);
 
     let layout_chunks = Layout::default()
         .direction(Direction::Vertical)
